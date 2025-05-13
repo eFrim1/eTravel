@@ -1,0 +1,40 @@
+server:
+  port: 8080
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: catalog
+          uri: http://localhost:4000
+          predicates:
+            - Path=/catalog/**
+          filters:
+            - StripPrefix=1
+
+        - id: reservation
+          uri: http://localhost:4002
+          predicates:
+            - Path=/reservations/**
+          filters:
+            - StripPrefix=1
+
+        - id: review
+          uri: http://localhost:4000  # review endpoints in catalog-service
+          predicates:
+            - Path=/reviews/**
+          filters:
+            - StripPrefix=1
+
+        - id: statistics
+          uri: http://localhost:4003
+          predicates:
+            - Path=/statistics/**
+          filters:
+            - StripPrefix=1
+
+        - id: user
+          uri: http://localhost:4001  # user-service
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=1
