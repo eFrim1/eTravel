@@ -4,12 +4,13 @@ import com.etravel.statisticsservice.domain.dto.OverallStatisticsDTO;
 import com.etravel.statisticsservice.service.StatisticsService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api/statistics")
+@RequestMapping("/")
 public class StatisticsController {
     private final StatisticsService statisticsService;
 
@@ -23,6 +24,7 @@ public class StatisticsController {
      * @param toDate end date (ISO format)
      */
     @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<OverallStatisticsDTO> getOverallStatistics(
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam("to")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate

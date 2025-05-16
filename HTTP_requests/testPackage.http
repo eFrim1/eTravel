@@ -1,0 +1,12 @@
+POST http://localhost:4002/api/tour-packages
+Content-Type: application/json
+
+{
+  "destination": "SampleCity",
+  "price": "500.0",
+  "startDate": "2025-06-01",
+  "endDate": "2025-06-10",
+  "image1": "image1.jpg",
+  "image2": "image2.jpg",
+  "image3": "image3.jpg"
+}

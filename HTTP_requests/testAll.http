@@ -1,0 +1,94 @@
+### Create a new user via gateway
+POST http://localhost:4000/users
+Content-Type: application/json
+
+{
+  "username": "testuser3",
+  "password": "Password123",
+  "email": "testuser3@example.com",
+  "firstName": "Test",
+  "lastName": "User",
+  "role": "CLIENT"
+}
+
+> {% client.global.set("user_id", response.body.id); %}
+
+### Retrieve created user
+GET http://localhost:4000/users/{{user_id}}
+Accept: application/json
+
+### Update the user
+PUT http://localhost:4000/users/{{user_id}}
+Content-Type: application/json
+
+{
+  "username": "testuser_updated",
+  "password": "NewPass123",
+  "email": "updated_testuser@example.com",
+  "firstName": "Updated",
+  "lastName": "User",
+  "role": "CLIENT"
+}
+
+> {% client.global.set("updated_user_id", response.body.id); %}
+
+### Create a new tour package via gateway
+POST http://localhost:4000/catalog
+Content-Type: application/json
+
+{
+  "destination": "SampleCity",
+  "price": "500.0",
+  "startDate": "2025-06-01",
+  "endDate": "2025-06-10",
+  "image1": "image1.jpg",
+  "image2": "image2.jpg",
+  "image3": "image3.jpg"
+}
+
+> {% client.global.set("package_id", response.body.id); %}
+
+### Retrieve created package
+GET http://localhost:4000/catalog/{{package_id}}
+Accept: application/json
+
+### Update the package
+PUT http://localhost:4000/catalog/{{package_id}}
+Content-Type: application/json
+
+{
+  "destination": "UpdatedCity",
+  "price": "750.0",
+  "startDate": "2025-07-01",
+  "endDate": "2025-07-05",
+  "image1": "new1.jpg",
+  "image2": "new2.jpg",
+  "image3": "new3.jpg"
+}
+
+> {% client.global.set("updated_package_id", response.body.id); %}
+
+
+### Create a reservation via gateway
+POST http://localhost:4000/reservations
+Content-Type: application/json
+
+{
+  "clientId": {{user_id}},
+  "tourPackageId": {{package_id}}
+}
+
+> {% client.global.set("reservation_id", response.body.id); %}
+
+### Retrieve reservation
+GET http://localhost:4000/reservations/{{reservation_id}}
+Accept: application/json
+
+#### Delete reservation
+#DELETE http://localhost:4000/reservations/{{reservation_id}}
+#
+#### Delete the user
+#DELETE http://localhost:4000/users/{{user_id}}
+#
+#### Delete the package
+#DELETE http://localhost:4000/catalog/{{package_id}}

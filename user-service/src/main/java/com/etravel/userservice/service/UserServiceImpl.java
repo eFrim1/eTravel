@@ -6,6 +6,7 @@ import com.etravel.userservice.domain.entity.RoleType;
 import com.etravel.userservice.domain.entity.User;
 import com.etravel.userservice.domain.mapper.UserMapper;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,10 +15,12 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepo;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepo, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepo, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -35,8 +38,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseDTO getUserByEmail(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+        return userMapper.toResponse(user);
+    }
+
+    @Override
     public UserResponseDTO createUser(UserRequestDTO dto) {
         User user = userMapper.toEntity(dto);
+        // **Hash the raw password before saving**
+        user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         User saved = userRepo.save(user);
         return userMapper.toResponse(saved);
     }
@@ -45,12 +56,18 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
         User existing = userRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + id));
-        existing.setUsername(dto.getUsername());
-        existing.setPasswordHash(userMapper.toEntity(dto).getPasswordHash());
+
         existing.setEmail(dto.getEmail());
         existing.setFirstName(dto.getFirstName());
         existing.setLastName(dto.getLastName());
+        existing.setUsername(dto.getUsername());
         existing.setRole(RoleType.valueOf(dto.getRole().toUpperCase()));
+
+        // **If the front-end sent a new password, hash that too**
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            existing.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        }
+
         User updated = userRepo.save(existing);
         return userMapper.toResponse(updated);
     }
@@ -59,4 +76,6 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         userRepo.deleteById(id);
     }
+
+
 }

@@ -1,32 +1,52 @@
-server:
-  port: 8080
+logging:
+  level:
+    org.springframework.security.web: DEBUG
 spring:
   cloud:
     gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          # The pattern in quotes must be exactly '[/**]'
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+            maxAge: 3600
       routes:
+        - id: home
+          uri: http://localhost:5137
+          predicates:
+            - Path=/
+          filters:
+            - RedirectTo=301,http://localhost:5137
         - id: catalog
-          uri: http://localhost:4000
+          uri: http://localhost:4002
           predicates:
             - Path=/catalog/**
           filters:
+            - RemoveRequestHeader=Origin
             - StripPrefix=1
 
         - id: reservation
-          uri: http://localhost:4002
+          uri: http://localhost:4003
           predicates:
             - Path=/reservations/**
           filters:
             - StripPrefix=1
 
         - id: review
-          uri: http://localhost:4000  # review endpoints in catalog-service
+          uri: http://localhost:4002  # review endpoints in catalog-service
           predicates:
             - Path=/reviews/**
           filters:
             - StripPrefix=1
 
         - id: statistics
-          uri: http://localhost:4003
+          uri: http://localhost:4004
           predicates:
             - Path=/statistics/**
           filters:

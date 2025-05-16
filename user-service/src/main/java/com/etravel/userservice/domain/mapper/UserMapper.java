@@ -18,7 +18,7 @@ public class UserMapper {
     public User toEntity(UserRequestDTO dto) {
         return new User(
                 dto.getUsername(),
-                passwordEncoder.encode(dto.getPassword()),
+                dto.getPassword(),
                 dto.getEmail(),
                 dto.getFirstName(),
                 dto.getLastName(),

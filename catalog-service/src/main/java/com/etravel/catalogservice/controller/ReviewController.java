@@ -4,11 +4,12 @@ import com.etravel.catalogservice.domain.dto.ReviewRequestDTO;
 import com.etravel.catalogservice.domain.dto.ReviewResponseDTO;
 import com.etravel.catalogservice.service.ReviewService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tour-packages/{pkgId}/reviews")
+@RequestMapping("/{pkgId}/reviews")
 public class ReviewController {
     private final ReviewService service;
 
@@ -22,6 +23,7 @@ public class ReviewController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<ReviewResponseDTO> create(@PathVariable("pkgId") Long pkgId,
                                                     @RequestBody ReviewRequestDTO dto) {
         return ResponseEntity.ok(service.create(pkgId, dto));

@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Box, Heading, FormControl, FormLabel, Input, Button, Stack, InputGroup, InputRightElement, IconButton, FormErrorMessage, useToast } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const { t } = useTranslation();
+  const { register } = useAuth();
   const [form, setForm] = useState({
+    username: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -23,11 +26,11 @@ export default function Register() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    if (!form.firstName || !form.lastName || !form.email || !form.password || !form.confirmPassword) {
+    if (!form.username || !form.firstName || !form.lastName || !form.email || !form.password || !form.confirmPassword) {
       setError('All fields are required');
       setIsLoading(false);
       return;
@@ -37,15 +40,26 @@ export default function Register() {
       setIsLoading(false);
       return;
     }
-    // Simulate registration
-    toast({
-      title: t('registerSuccess'),
-      description: t('welcome', { name: form.firstName }),
-      status: 'success',
-      duration: 4000,
-      isClosable: true,
+    // Send registration to backend
+    const result = await register({
+      username: form.username,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      password: form.password,
     });
-    setForm({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+    if (result.success) {
+      toast({
+        title: t('registerSuccess'),
+        description: t('welcome', { name: form.firstName }),
+        status: 'success',
+        duration: 4000,
+        isClosable: true,
+      });
+      setForm({ username: '', firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+    } else {
+      setError(result.message || 'Registration failed');
+    }
     setIsLoading(false);
   };
 
@@ -54,6 +68,10 @@ export default function Register() {
       <Heading as="h2" size="lg" mb={6} color="teal.700">{t('register')}</Heading>
       <form onSubmit={handleSubmit}>
         <Stack spacing={4}>
+          <FormControl id="username" isRequired isInvalid={!!error && !form.username}>
+            <FormLabel>{t('username') || 'Username'}</FormLabel>
+            <Input name="username" value={form.username} onChange={handleChange} autoComplete="username" />
+          </FormControl>
           <FormControl id="firstName" isRequired isInvalid={!!error && !form.firstName}>
             <FormLabel>{t('firstName')}</FormLabel>
             <Input name="firstName" value={form.firstName} onChange={handleChange} autoComplete="given-name" />

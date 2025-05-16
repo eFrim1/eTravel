@@ -36,7 +36,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
-    protected User() { }
+    public User() { }
 
     public User(String username,
                 String passwordHash,

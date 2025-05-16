@@ -23,4 +23,16 @@ public class UserResponseDTO {
     public void setLastName(String lastName) { this.lastName = lastName; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    @Override
+    public String toString() {
+        return "UserResponseDTO{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", role='" + role + '\'' +
+                '}';
+    }
 }

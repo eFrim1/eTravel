@@ -24,32 +24,12 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    // Mock authentication logic
-    if (form.email === 'client@email.com' && form.password === 'client') {
-      login({
-        id: 1,
-        firstName: 'John',
-        lastName: 'Doe',
-        email: form.email,
-        role: 'client',
-        purchasedPackages: [1, 2],
-      });
-      toast({ title: t('welcome', { name: 'John' }), status: 'success', duration: 3000, isClosable: true });
-      navigate('/');
-    } else if (form.email === 'admin@email.com' && form.password === 'admin') {
-      login({ id: 2, firstName: 'Admin', lastName: 'User', email: form.email, role: 'admin' });
-      toast({ title: t('welcome', { name: 'Admin' }), status: 'success', duration: 3000, isClosable: true });
-      navigate('/');
-    } else if (form.email === 'employee@email.com' && form.password === 'employee') {
-      login({ id: 3, firstName: 'Employee', lastName: 'User', email: form.email, role: 'employee' });
-      toast({ title: t('welcome', { name: 'Employee' }), status: 'success', duration: 3000, isClosable: true });
-      navigate('/');
-    } else if (form.email === 'manager@email.com' && form.password === 'manager') {
-      login({ id: 4, firstName: 'Manager', lastName: 'User', email: form.email, role: 'manager' });
-      toast({ title: t('welcome', { name: 'Manager' }), status: 'success', duration: 3000, isClosable: true });
+    const result = await login({ email: form.email, password: form.password });
+    if (result.success) {
+      toast({ title: t('welcome', { name: form.email }), status: 'success', duration: 3000, isClosable: true });
       navigate('/');
     } else {
-      setError('Invalid email or password');
+      setError(result.message || 'Invalid email or password');
     }
     setIsLoading(false);
   };
