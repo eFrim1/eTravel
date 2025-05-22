@@ -1,3 +1,10 @@
 logging:
   level:
     org.springframework.security.web: DEBUG
+
+app:
+  jwt:
+    key: S252Ulm0J+McjvfZIE/KC7RVNvj2r1VS/DLJx4HaaDM=
+    algorithm: HS256
+    issuer: eTravel
+    expiresIn: 60m

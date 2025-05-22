@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getPackages } from '../services/packageService';
 
 export default function usePackageList() {
@@ -6,8 +6,20 @@ export default function usePackageList() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState('destination');
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const packages = useMemo(() => getPackages(), []);
+  useEffect(() => {
+    setLoading(true);
+    getPackages()
+      .then(data => {
+        setPackages(data);
+        setError('');
+      })
+      .catch(() => setError('Error loading packages'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
     let result = packages.filter((pkg) => {
@@ -56,5 +68,7 @@ export default function usePackageList() {
     setSortBy,
     uniqueDestinations,
     resetFilters,
+    loading,
+    error,
   };
 } 

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Box, SimpleGrid, Heading, Flex, Select, Input, Button, useToast, Skeleton, SkeletonText } from '@chakra-ui/react';
+import { Box, SimpleGrid, Heading, Flex, Select, Input, Button, useToast, Skeleton, SkeletonText, Alert, AlertIcon } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import PackageCardView from './PackageCardView';
 import PackageDetailsModal from './PackageDetailsModal';
 import ReviewFormModal from './ReviewFormModal';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
 export default function PackageListView({
   packages,
@@ -19,13 +20,13 @@ export default function PackageListView({
   setSortBy,
   uniqueDestinations,
   resetFilters,
+  loading,
+  error,
 }) {
   const { t } = useTranslation();
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isReviewModalOpen, setReviewModalOpen] = useState(false);
-  const [isReservationModalOpen, setReservationModalOpen] = useState(false);
-  const [packageReviews, setPackageReviews] = useState({}); // { [packageId]: [reviews] }
   const toast = useToast();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -36,8 +37,7 @@ export default function PackageListView({
   const [pendingMaxPrice, setPendingMaxPrice] = useState(maxPrice);
   const [pendingSortBy, setPendingSortBy] = useState(sortBy);
 
-  // Simulate loading state
-  const isLoading = false; // set to true to demo skeletons
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0);
 
   const handleOpenModal = (pkg) => {
     setSelectedPackage(pkg);
@@ -54,42 +54,38 @@ export default function PackageListView({
   const handleCloseReviewModal = () => {
     setReviewModalOpen(false);
   };
-  const handleSubmitReview = (review) => {
-    if (!selectedPackage) return;
-    setPackageReviews(prev => ({
-      ...prev,
-      [selectedPackage.id]: [
-        ...(prev[selectedPackage.id] || []),
-        { ...review, id: Date.now().toString(), createdAt: new Date().toISOString() }
-      ]
-    }));
+
+  const handleReviewSubmitted = () => {
     setReviewModalOpen(false);
+    setReviewRefreshKey(k => k + 1);
   };
 
-  const handleReserve = (pkg) => {
-    if (isAuthenticated) {
+  const handleReserve = async (pkg) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    try {
+      toast({ title: t('reserve'), description: t('processing'), status: 'info', duration: 1500 });
+      await api.post('/reservations', { tourPackageId: pkg.id, clientId: user.id });
       toast({
         title: t('reserve'),
-        description: `${t('reservedAt')}: ${user?.firstName || ''} (${user?.email || ''})`,
+        description: t('reservationSuccess') || 'Reservation successful!',
         status: 'success',
         duration: 4000,
         isClosable: true,
       });
-    } else {
-      navigate('/login');
+    } catch (err) {
+      toast({
+        title: t('reserve'),
+        description: t('reservationError') || 'Reservation failed.',
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
     }
   };
 
-  // Merge reviews from local state with package reviews
-  const getPackageWithReviews = (pkg) => ({
-    ...pkg,
-    reviews: [
-      ...(pkg.reviews || []),
-      ...(packageReviews[pkg.id] || [])
-    ]
-  });
-
-  // Apply filters/sorting only when Apply is clicked
   const handleApplyFilters = () => {
     setDestination(pendingDestination);
     setMinPrice(pendingMinPrice);
@@ -141,7 +137,7 @@ export default function PackageListView({
           {t('reset')}
         </Button>
       </Flex>
-      {isLoading ? (
+      {loading ? (
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
           {[...Array(6)].map((_, idx) => (
             <Box key={idx} borderWidth="1px" borderRadius="lg" p={4} bg="white" boxShadow="sm">
@@ -150,12 +146,14 @@ export default function PackageListView({
             </Box>
           ))}
         </SimpleGrid>
+      ) : error ? (
+        <Alert status="error" mb={4}><AlertIcon />{error}</Alert>
       ) : (
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
           {packages.map(pkg => (
             <PackageCardView
               key={pkg.id}
-              pkg={getPackageWithReviews(pkg)}
+              pkg={pkg}
               onViewDetails={() => handleOpenModal(pkg)}
               onReserve={() => handleReserve(pkg)}
               isAuthenticated={isAuthenticated}
@@ -166,13 +164,15 @@ export default function PackageListView({
       <PackageDetailsModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        pkg={selectedPackage ? getPackageWithReviews(selectedPackage) : null}
+        pkg={selectedPackage}
         onAddReview={handleAddReview}
+        key={selectedPackage ? selectedPackage.id + '-' + reviewRefreshKey : 'none'}
       />
       <ReviewFormModal
         isOpen={isReviewModalOpen}
         onClose={handleCloseReviewModal}
-        onSubmit={handleSubmitReview}
+        onSubmit={handleReviewSubmitted}
+        pkgId={selectedPackage?.id}
       />
     </Box>
   );

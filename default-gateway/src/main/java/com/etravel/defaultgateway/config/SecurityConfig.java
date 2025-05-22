@@ -40,10 +40,7 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
         http
-                // disable CSRF (for stateless APIs)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-
-                // authorize requests
                 .authorizeExchange(authorize -> authorize
 
                         // 1) Public endpoints
@@ -84,8 +81,6 @@ public class SecurityConfig {
 //                        .anyExchange().authenticated()
                                 .anyExchange().permitAll()
                 )
-
-                // JWT-based resource server
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();

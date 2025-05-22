@@ -13,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -25,16 +24,13 @@ public class UserController {
     private final UserService         userService;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider     tokenProvider;
-    private final PasswordEncoder      pwEncoder;
 
     public UserController(UserService userService,
                           AuthenticationManager authManager,
-                          JwtTokenProvider tokenProvider,
-                          PasswordEncoder pwEncoder) {
+                          JwtTokenProvider tokenProvider) {
         this.userService   = userService;
         this.authManager   = authManager;
         this.tokenProvider = tokenProvider;
-        this.pwEncoder     = pwEncoder;
     }
 
     @PostMapping("/register")
@@ -54,7 +50,7 @@ public class UserController {
         return ResponseEntity.ok(new JwtResponseDTO(token));
     }
     @GetMapping("/me")
-    @PreAuthorize("hasAuthority('ROLE_CLIENT')")
+    //@PreAuthorize("hasAuthority('ROLE_CLIENT')")
     public ResponseEntity<UserResponseDTO> me(Authentication authentication) {
         String email = authentication.getName();
         UserResponseDTO dto = userService.getUserByEmail(email);
@@ -62,20 +58,20 @@ public class UserController {
     }
     // 3) ADMIN only
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public List<UserResponseDTO> getAll() {
         return userService.getAllUsers();
     }
 
     // 4) ADMIN or owner (by email)
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENT') and @customUser.getEmail(principal) == #id)")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<UserResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENT') and @customUser.getEmail(principal) == #id)")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<UserResponseDTO> update(
             @PathVariable Long id,
             @RequestBody UserRequestDTO dto) {
@@ -84,7 +80,7 @@ public class UserController {
 
     // 5) ADMIN only
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();

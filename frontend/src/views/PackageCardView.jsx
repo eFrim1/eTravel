@@ -9,6 +9,9 @@ export default function PackageCardView({ pkg, onViewDetails, onReserve, isAuthe
     ? (pkg.reviews.reduce((sum, r) => sum + Number(r.rating), 0) / pkg.reviews.length).toFixed(1)
     : null;
 
+  const hasImages = Array.isArray(pkg.images) && pkg.images.length > 0;
+  const mainImage = hasImages ? pkg.images[0].trim() : 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png';
+
   return (
     <Box
       borderWidth="1px"
@@ -22,12 +25,13 @@ export default function PackageCardView({ pkg, onViewDetails, onReserve, isAuthe
       w="100%"
     >
       <Image
-        src={pkg.images[0]}
+        src={mainImage}
         alt={pkg.destination}
         w="100%"
         h="180px"
         objectFit="cover"
         borderTopRadius="lg"
+        onError={e => { e.target.onerror = null; e.target.src = 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'; }}
       />
       <Stack spacing={2} p={4}>
         <Flex align="center" justify="space-between">

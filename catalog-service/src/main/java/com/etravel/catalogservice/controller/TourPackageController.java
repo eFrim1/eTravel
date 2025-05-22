@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -30,28 +31,34 @@ public class TourPackageController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<TourPackageResponseDTO> create(@RequestBody TourPackageRequestDTO dto) {
         return ResponseEntity.ok(service.create(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<TourPackageResponseDTO> update(@PathVariable Long id,
                                                          @RequestBody TourPackageRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/export")
-    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('MANAGER')")
-    public ResponseEntity<Void> export(@RequestParam String format, HttpServletResponse response) {
-        return ResponseEntity.noContent().build();
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
+    public void export(@RequestParam String format, HttpServletResponse response) {
+        service.export(format, response);
+    }
+
+    @PostMapping("/export/reservations")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER') or hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_ADMINISTRATOR')")
+    public void exportSelectedToDoc(@RequestBody List<Long> ids, HttpServletResponse response) throws IOException {
+        service.exportByIds(ids, "doc", response);
     }
 }

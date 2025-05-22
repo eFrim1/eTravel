@@ -18,37 +18,38 @@ public class ReservationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('CLIENT') or hasRole('EMPLOYEE')")
+
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public List<ReservationResponseDTO> getAll() {
         return service.getAllReservations();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('CLIENT') or hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<ReservationResponseDTO> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getReservationById(id));
     }
 
     @GetMapping("/by-client/{clientId}")
-    @PreAuthorize("hasRole('CLIENT') or hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public List<ReservationResponseDTO> getByClient(@PathVariable Long clientId) {
         return service.getReservationsByClientId(clientId);
     }
 
     @GetMapping("/by-package/{pkgId}")
-    @PreAuthorize("hasRole('CLIENT') or hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public List<ReservationResponseDTO> getByPackage(@PathVariable("pkgId") Long pkgId) {
         return service.getReservationsByPackageId(pkgId);
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CLIENT') or hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<ReservationResponseDTO> create(@RequestBody ReservationRequestDTO dto) {
         return ResponseEntity.ok(service.createReservation(dto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CLIENT') or hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.deleteReservation(id);
         return ResponseEntity.noContent().build();

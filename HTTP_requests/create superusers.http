@@ -1,0 +1,40 @@
+
+POST http://localhost:4000/users/register
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin",
+  "email": "admin@example.com",
+  "firstName": "admin",
+  "lastName": "admin",
+  "role": "ADMINISTRATOR"
+}
+
+###
+
+POST http://localhost:4000/users/register
+Content-Type: application/json
+
+{
+  "username": "manager",
+  "password": "manager",
+  "email": "manager@example.com",
+  "firstName": "manager",
+  "lastName": "manager",
+  "role": "MANAGER"
+}
+
+###
+
+POST http://localhost:4000/users/register
+Content-Type: application/json
+
+{
+"username": "employee",
+"password": "employee",
+"email": "employee@example.com",
+"firstName": "employee",
+"lastName": "employee",
+"role": "EMPLOYEE"
+}

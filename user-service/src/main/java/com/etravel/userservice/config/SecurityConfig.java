@@ -1,9 +1,6 @@
 package com.etravel.userservice.config;
 
 import com.etravel.userservice.service.CustomUserDetailsService;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.OctetSequenceKey;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,19 +22,16 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-import javax.crypto.SecretKey;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig{
     private final CustomUserDetailsService userDetailsService;
+    private final AppJwtProperties appJwtProperties;
 
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
-
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, AppJwtProperties appJwtProperties) {
         this.userDetailsService = customUserDetailsService;
+        this.appJwtProperties = appJwtProperties;
     }
 
     @Bean
@@ -53,15 +47,6 @@ public class SecurityConfig{
                         .requestMatchers(HttpMethod.POST, "/register", "/login").permitAll()
                         .anyRequest().authenticated()
                 )
-//                .oauth2ResourceServer(oauth2 -> oauth2
-//                        .jwt(conf -> conf.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-//                );
-//                .oauth2ResourceServer(oauth2 -> oauth2
-//                        .jwt(jwt -> jwt
-//                                // replace the default converter
-//                                .jwtAuthenticationConverter(customConverter())
-//                        )
-//                );
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
                 );
@@ -70,10 +55,9 @@ public class SecurityConfig{
                                 }
 
     private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        // create a custom JWT converter to map the roles from the token as granted authorities
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("role"); // default is: scope, scp
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix(""); // default is: SCOPE_
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
@@ -82,12 +66,7 @@ public class SecurityConfig{
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        var algorithm = JWSAlgorithm.HS256;
-        var jwk = new OctetSequenceKey.Builder(jwtSecret.getBytes())
-                .algorithm(algorithm)
-                .build();
-        SecretKey key = jwk.toSecretKey();
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        return NimbusJwtDecoder.withSecretKey(appJwtProperties.getKey()).build();
     }
 
     @Bean

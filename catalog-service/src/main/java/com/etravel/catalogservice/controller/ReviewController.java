@@ -23,7 +23,7 @@ public class ReviewController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAuthority('ROLE_CLIENT') or hasAuthority('ROLE_EMPLOYEE') or hasAuthority('ROLE_MANAGER') or hasAuthority('ROLE_ADMINISTRATOR')")
     public ResponseEntity<ReviewResponseDTO> create(@PathVariable("pkgId") Long pkgId,
                                                     @RequestBody ReviewRequestDTO dto) {
         return ResponseEntity.ok(service.create(pkgId, dto));

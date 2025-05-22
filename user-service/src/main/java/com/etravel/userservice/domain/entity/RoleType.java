@@ -4,5 +4,5 @@ public enum RoleType {
     CLIENT,
     EMPLOYEE,
     MANAGER,
-    ADMINISTRATOR
+    ADMINISTRATOR,
 }

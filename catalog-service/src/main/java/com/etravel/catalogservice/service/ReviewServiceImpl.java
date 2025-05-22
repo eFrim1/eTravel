@@ -18,19 +18,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReviewServiceImpl implements ReviewService {
-    private final ApplicationEventPublisher publisher;
     private final IReviewRepository reviewRepo;
     private final ITourPackageRepository packageRepo;
     private final ReviewMapper mapper;
 
     public ReviewServiceImpl(IReviewRepository reviewRepo,
                              ITourPackageRepository packageRepo,
-                             ReviewMapper mapper,
-                             ApplicationEventPublisher publisher) {
+                             ReviewMapper mapper) {
         this.reviewRepo = reviewRepo;
         this.packageRepo = packageRepo;
         this.mapper = mapper;
-        this.publisher = publisher;
     }
 
     @Override
@@ -48,7 +45,6 @@ public class ReviewServiceImpl implements ReviewService {
         Review rev = mapper.toEntity(dto);
         pkg.addReview(rev);
         reviewRepo.save(rev);
-        publisher.publishEvent(new ReviewSubmittedEvent(rev.getId(), packageId, rev.getRating(), rev.getCreatedAt()));
         return mapper.toResponse(rev);
     }
 }

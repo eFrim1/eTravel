@@ -5,7 +5,7 @@ import Register from './pages/Register';
 import MyPackages from './pages/MyPackages';
 import Admin from './pages/Admin';
 import Employee from './pages/Employee';
-import Manager from './pages/Manager';
+import Statistics from './pages/Statistics';
 import { Box, Flex, Heading, HStack, Button, Menu, MenuButton, MenuList, MenuItem, Avatar, Text, Divider, Stack } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import LanguageSwitcher from './views/LanguageSwitcher';
@@ -30,7 +30,7 @@ function App() {
                 _activeLink={{ fontWeight: 'bold', textDecoration: 'underline', bg: 'teal.100', color: 'teal.700' }}
                 _hover={{ bg: 'teal.100', color: 'teal.700' }}
               >{t('home')}</Button>
-              {isAuthenticated && user?.role === 'client' && (
+              {isAuthenticated && (user?.role === 'client' || user?.role === 'employee') && (
                 <Button as={NavLink} to="/my-packages" variant="ghost" color="white" fontWeight="medium" 
                   _activeLink={{ fontWeight: 'bold', textDecoration: 'underline', bg: 'teal.100', color: 'teal.700' }}
                   _hover={{ bg: 'teal.100', color: 'teal.700' }}
@@ -46,13 +46,13 @@ function App() {
                 <Button as={NavLink} to="/employee" variant="ghost" color="white" fontWeight="medium" 
                   _activeLink={{ fontWeight: 'bold', textDecoration: 'underline', bg: 'teal.100', color: 'teal.700' }}
                   _hover={{ bg: 'teal.100', color: 'teal.700' }}
-                >{t('employee')}</Button>
+                >{t('employeeTab')}</Button>
               )}
               {isAuthenticated && user?.role === 'manager' && (
-                <Button as={NavLink} to="/manager" variant="ghost" color="white" fontWeight="medium" 
+                <Button as={NavLink} to="/statistics" variant="ghost" color="white" fontWeight="medium" 
                   _activeLink={{ fontWeight: 'bold', textDecoration: 'underline', bg: 'teal.100', color: 'teal.700' }}
                   _hover={{ bg: 'teal.100', color: 'teal.700' }}
-                >{t('manager')}</Button>
+                >{t('statistics') || 'Statistics'}</Button>
               )}
             </HStack>
           </HStack>
@@ -85,7 +85,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route element={<ProtectedRoute allowedRoles={['client']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['client', 'employee']} />}>
               <Route path="/my-packages" element={<MyPackages />} />
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
@@ -95,7 +95,7 @@ function App() {
               <Route path="/employee" element={<Employee />} />
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
-              <Route path="/manager" element={<Manager />} />
+              <Route path="/statistics" element={<Statistics />} />
             </Route>
             <Route path="/not-authorized" element={<NotAuthorized />} />
           </Routes>

@@ -15,14 +15,20 @@ import {
   Divider,
   Flex,
   SimpleGrid,
-  Avatar
+  Avatar,
+  Spinner,
+  Alert,
+  AlertIcon
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import api from '../api/axios';
 
 export default function PackageDetailsModal({ isOpen, onClose, pkg, onAddReview }) {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+
   if (!pkg) return null;
 
   // Only show Add Review if user is a client and has purchased this package
@@ -31,6 +37,9 @@ export default function PackageDetailsModal({ isOpen, onClose, pkg, onAddReview 
     user?.role === 'client' &&
     Array.isArray(user.purchasedPackages) &&
     user.purchasedPackages.includes(pkg.id);
+
+  const hasImages = Array.isArray(pkg.images) && pkg.images.length > 0;
+  const mainImage = hasImages ? pkg.images[0].trim() : 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
@@ -43,26 +52,30 @@ export default function PackageDetailsModal({ isOpen, onClose, pkg, onAddReview 
             {/* Images column */}
             <Box flexShrink={0} w={{ base: '100%', md: '320px' }}>
               <Image
-                src={pkg.images[0]}
+                src={mainImage}
                 alt={pkg.destination}
                 w="100%"
                 h="220px"
                 objectFit="cover"
                 borderRadius="lg"
                 mb={2}
+                onError={e => { e.target.onerror = null; e.target.src = 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'; }}
               />
-              <SimpleGrid columns={pkg.images.length > 1 ? pkg.images.length : 1} spacing={2}>
-                {pkg.images.slice(1).map((img, idx) => (
-                  <Image
-                    key={idx}
-                    src={img}
-                    alt={pkg.destination}
-                    boxSize="60px"
-                    objectFit="cover"
-                    borderRadius="md"
-                  />
-                ))}
-              </SimpleGrid>
+              {hasImages && pkg.images.length > 1 && (
+                <SimpleGrid columns={pkg.images.length} spacing={2}>
+                  {pkg.images.slice(1).map((img, idx) => (
+                    <Image
+                      key={idx}
+                      src={img ? img.trim() : 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'}
+                      alt={pkg.destination}
+                      boxSize="60px"
+                      objectFit="cover"
+                      borderRadius="md"
+                      onError={e => { e.target.onerror = null; e.target.src = 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'; }}
+                    />
+                  ))}
+                </SimpleGrid>
+              )}
             </Box>
             {/* Details and reviews column */}
             <Box flex="1">

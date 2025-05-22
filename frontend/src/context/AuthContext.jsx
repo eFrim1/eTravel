@@ -37,7 +37,10 @@ export function AuthProvider({ children }) {
       console.log('Fetching user profile...');
       const profileRes = await api.get('/users/me');
       console.log('Profile response:', profileRes);
-      setUser(profileRes.data);
+      setUser({
+        ...profileRes.data,
+        role: profileRes.data.role.toLowerCase(),
+      });
       localStorage.setItem('user', JSON.stringify(profileRes.data));
       return { success: true };
     } catch (err) {
